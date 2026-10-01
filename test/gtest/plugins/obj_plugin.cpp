@@ -47,6 +47,14 @@ namespace gtest::plugins::obj {
  *                 HAVE_CUOBJ_CLIENT is defined.
  *                 Skipped at runtime if NIXL_OBJ_ENDPOINT_OVERRIDE is not set.
  *                 Includes DellVramXferTest (GPU memory) if HAVE_CUDA is also defined.
+ * - ObjCloudianTests: Cloudian S3 over RDMA tests
+ *                     (accelerated = true, type = cloudian, req_checksum = required,
+ *                     scheme = http)
+ *                     Note: Compiled when the Cloudian RDMA-enabled AWS SDK is available
+ *                     (HAVE_CLOUDIAN_RDMA_SDK), and skipped at runtime if
+ *                     NIXL_OBJ_ENDPOINT_OVERRIDE is not set. Includes multi-buffer DRAM
+ *                     transfer coverage and CloudianVramXferTest (GPU memory) if HAVE_CUDA
+ *                     is also defined.
  *
  * Environment:
  *       - NIXL_OBJ_ENDPOINT_OVERRIDE  (e.g. http://100.68.213.151:9020)

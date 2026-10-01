@@ -49,6 +49,21 @@ if cuobj_dep.found()
     plugins_gtest_sources += 'obj_cuobj_plugin.cpp'
 endif
 
+cloudian_rdma_sdk_test_found = cpp.compiles(
+    '''
+    #include <aws/s3/S3Client.h>
+    #include <aws/s3/S3ClientRDMA.h>
+    #include <aws/s3/RdmaPtr.h>
+    #include <aws/s3/model/PutObjectRDMARequest.h>
+    void check() { (void) Aws::S3::S3ClientRDMA::IsRDMAEnabled(); }
+    ''',
+    dependencies: [aws_s3, aws_s3_crt, aws_core],
+    name: 'Cloudian RDMA-enabled AWS C++ SDK for tests')
+if cuobj_dep.found() and cloudian_rdma_sdk_test_found
+    plugins_gtest_cpp_flags += '-DHAVE_CLOUDIAN_RDMA_SDK'
+    plugins_gtest_sources += 'obj_cloudian_plugin.cpp'
+endif
+
 plugins_test_exe = executable('plugins_gtest',
     sources : plugins_gtest_sources,
     include_directories: [nixl_inc_dirs, utils_inc_dirs, plugins_inc_dirs, '.'],

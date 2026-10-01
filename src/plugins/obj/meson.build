@@ -53,6 +53,37 @@ if cuobj_dep.found()
         's3_accel/dell/engine_impl.h',
     ]
     plugin_deps += [ cuobj_dep ]
+
+    # Cloudian's accelerated engine requires a patched AWS S3 SDK that adds
+    # GetObjectRDMA(Async)/PutObjectRDMA(Async) to Aws::S3::S3Client. The patched SDK is a
+    # drop-in replacement (same package name as stock), so probe for the symbols
+    # to determine whether to build the plugin.
+    cloudian_rdma_sdk_found = cpp.compiles(
+        '''
+        #include <aws/s3/S3Client.h>
+        #include <aws/s3/S3ClientRDMA.h>
+        #include <aws/s3/RdmaPtr.h>
+        #include <aws/s3/model/PutObjectRDMARequest.h>
+
+        void
+        check() {
+            (void) Aws::S3::S3ClientRDMA::IsRDMAEnabled();
+        }
+        ''',
+        dependencies: [aws_s3, aws_core],
+        name: 'Cloudian RDMA-enabled AWS C++ SDK')
+
+    if cloudian_rdma_sdk_found
+        message('Found Cloudian RDMA-enabled AWS C++ SDK. Enabling Cloudian Accelerated engine')
+        obj_sources += [
+            's3_accel/cloudian/client.cpp',
+            's3_accel/cloudian/client.h',
+            's3_accel/cloudian/engine_impl.cpp',
+            's3_accel/cloudian/engine_impl.h',
+        ]
+    else
+        message('Could not find Cloudian RDMA-enabled AWS C++ SDK. Skipping Cloudian Accelerated engine')
+    endif
 else
     message('Could not find CUObjClient Library. Skipping S3 Accelerated engines')
 endif
